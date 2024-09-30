@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"/>
+    <link data-th-href="@{/css/main.css?{id}(id=${timestamp})}" rel="stylesheet">
+    <title>Contact Us</title>
+
+    <style>
+        .content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .card-custom {
+            max-width: 500px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .card-custom .card-body {
+            color: black; /* Set font color to black */
+        }
+
+        .form-group {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .btn-custom {
+            margin-top: 20px;
+        }
+        
+        .card-custom .card-body {
+		    color: black; /* Set font color to black */
+		}
+        
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="/">Ultimate CI/CD Pipeline</a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/contact">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="content">
+    <h1>Contact Us</h1>
+
+    <!-- Contact Information Card -->
+    <div class="card card-custom">
+        <div class="card-body">
+            <h5 class="card-title">Our Contact Information</h5>
+            <p class="card-text">
+                <strong>Name:</strong> Manoj Bharadwaja Thota<br>
+                <strong>Email:</strong> bharadwaja1.618@gmail.com <br>
+                <strong>Phone:</strong> +91-6302354169 <br>
+                <strong>Address:</strong> Guntur, India
+            </p>
+        </div>
+    </div>
+
+    <a href="/" class="btn btn-custom btn-secondary">Back to Home</a>
+</div>
+
+<script data-th-src="@{/js/main.js}"></script>
+</body>
+</html>
