@@ -8,15 +8,17 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        // Checkout the repository using Jenkins' built-in git step
+        echo 'Starting checkout stage...'
         git branch: 'main', url: 'https://github.com/bharadwaja2711/Jenkins.git'
+        echo 'Checkout completed.'
       }
     }
     stage('Build and Test') {
       steps {
-        // List files and build the Maven project
+        echo 'Starting Build and Test stage...'
         sh 'ls -ltr'
         sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && mvn clean package'
+        echo 'Build and Test completed.'
       }
     }
     stage('Static Code Analysis') {
@@ -24,9 +26,11 @@ pipeline {
         SONAR_URL = "http://13.233.207.8:9000"
       }
       steps {
+        echo 'Starting Static Code Analysis...'
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
         }
+        echo 'Static Code Analysis completed.'
       }
     }
     stage('Build and Push Docker Image') {
@@ -34,14 +38,15 @@ pipeline {
         DOCKER_IMAGE = "bharadwaja27/ultimate-cicd:${BUILD_NUMBER}"
       }
       steps {
+        echo 'Starting Docker image build and push...'
         script {
-          // Build Docker image and push it to Docker Hub
           sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
           def dockerImage = docker.image("${DOCKER_IMAGE}")
           docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
             dockerImage.push()
           }
         }
+        echo 'Docker image build and push completed.'
       }
     }
     stage('Update Deployment File') {
@@ -50,6 +55,7 @@ pipeline {
         GIT_USER_NAME = "bharadwaja2711"
       }
       steps {
+        echo 'Updating deployment file...'
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
           sh '''
             git config user.email "bharadwaja1.618@gmail.com"
@@ -61,6 +67,7 @@ pipeline {
             git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
           '''
         }
+        echo 'Deployment file update completed.'
       }
     }
   }
