@@ -8,12 +8,13 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        sh 'echo passed'
+        // Checkout the repository using Jenkins' built-in git step
         git branch: 'main', url: 'https://github.com/bharadwaja2711/Jenkins.git'
       }
     }
     stage('Build and Test') {
       steps {
+        // List files and build the Maven project
         sh 'ls -ltr'
         sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && mvn clean package'
       }
@@ -31,39 +32,47 @@ pipeline {
     stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "bharadwaja27/ultimate-cicd:${BUILD_NUMBER}"
-        // DOCKERFILE_LOCATION = "ULTIMATE-CICD-PIPELINE/spring-boot-app/Dockerfile"
-        // Configure
-        REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
       steps {
         script {
-            sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
-            def dockerImage = docker.image("${DOCKER_IMAGE}")
-            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
-                dockerImage.push()
-            }
+          // Build Docker image and push it to Docker Hub
+          sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
+          def dockerImage = docker.image("${DOCKER_IMAGE}")
+          docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
+            dockerImage.push()
+          }
         }
       }
     }
     stage('Update Deployment File') {
-        environment {
-            GIT_REPO_NAME = "Jenkins"
-            GIT_USER_NAME = "bharadwaja27"
+      environment {
+        GIT_REPO_NAME = "Jenkins"
+        GIT_USER_NAME = "bharadwaja2711"
+      }
+      steps {
+        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+          sh '''
+            git config user.email "bharadwaja1.618@gmail.com"
+            git config user.name "bharadwaja2711"
+            BUILD_NUMBER=${BUILD_NUMBER}
+            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
+            git add ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
+            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+          '''
         }
-        steps {
-            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                sh '''
-                    git config user.email "bharadwaja1.618@gmail.com"
-                    git config user.name "bharadwaja2711"
-                    BUILD_NUMBER=${BUILD_NUMBER}
-                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
-                    git add ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
-                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                '''
-            }
-        }
+      }
+    }
+  }
+  post {
+    always {
+      echo 'Pipeline finished.'
+    }
+    success {
+      echo 'Pipeline succeeded!'
+    }
+    failure {
+      echo 'Pipeline failed!'
     }
   }
 }
-    
