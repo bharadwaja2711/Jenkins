@@ -14,8 +14,8 @@ pipeline {
     }
     stage('Build and Test') {
       steps {
-        sh 'ls -ltr'
-        sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && mvn clean package'
+        sh 'apt-get update && apt-get install -y openjdk-17-jdk' // Install Java 17
+        sh 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 && cd ULTIMATE-CICD-PIPELINE/spring-boot-app && mvn clean package'
       }
     }
     stage('Static Code Analysis') {
