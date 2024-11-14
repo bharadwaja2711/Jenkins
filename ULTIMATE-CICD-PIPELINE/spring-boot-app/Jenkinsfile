@@ -8,78 +8,60 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        echo 'Starting checkout stage...'
-        git branch: 'main', url: 'https://github.com/bharadwaja2711/Jenkins.git'
-        echo 'Checkout completed.'
+        sh 'echo passed'
+        //git branch: 'main', url: 'https://github.com/bharadwaja2711/Jenkins.git'
       }
     }
     stage('Build and Test') {
       steps {
-        echo 'Starting Build and Test stage...'
         sh 'ls -ltr'
         sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && mvn clean package'
-        echo 'Build and Test completed.'
       }
     }
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://13.233.207.8:9000"
+        SONAR_URL = "http://34.201.116.83:9000"
       }
       steps {
-        echo 'Starting Static Code Analysis...'
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
         }
-        echo 'Static Code Analysis completed.'
       }
     }
     stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "bharadwaja27/ultimate-cicd:${BUILD_NUMBER}"
+        // DOCKERFILE_LOCATION = "ULTIMATE-CICD-PIPELINE/spring-boot-app/Dockerfile"
+        REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
       steps {
-        echo 'Starting Docker image build and push...'
         script {
-          sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
-          def dockerImage = docker.image("${DOCKER_IMAGE}")
-          docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-            dockerImage.push()
-          }
+            sh 'cd ULTIMATE-CICD-PIPELINE/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
+            def dockerImage = docker.image("${DOCKER_IMAGE}")
+            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+                dockerImage.push()
+            }
         }
-        echo 'Docker image build and push completed.'
       }
     }
     stage('Update Deployment File') {
-      environment {
-        GIT_REPO_NAME = "Jenkins"
-        GIT_USER_NAME = "bharadwaja2711"
-      }
-      steps {
-        echo 'Updating deployment file...'
-        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-          sh '''
-            git config user.email "bharadwaja1.618@gmail.com"
-            git config user.name "bharadwaja2711"
-            BUILD_NUMBER=${BUILD_NUMBER}
-            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
-            git add ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
-            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-          '''
+        environment {
+            GIT_REPO_NAME = "Jenkins"
+            GIT_USER_NAME = "bharadwaja27"
         }
-        echo 'Deployment file update completed.'
-      }
-    }
-  }
-  post {
-    always {
-      echo 'Pipeline finished.'
-    }
-    success {
-      echo 'Pipeline succeeded!'
-    }
-    failure {
-      echo 'Pipeline failed!'
+        steps {
+            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                sh '''
+                    git config user.email "bharadwaja1.618@gmail.com"
+                    git config user.name "bharadwaja2711"
+                    BUILD_NUMBER=${BUILD_NUMBER}
+                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
+                    git add ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
+                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                '''
+            }
+        }
     }
   }
 }
