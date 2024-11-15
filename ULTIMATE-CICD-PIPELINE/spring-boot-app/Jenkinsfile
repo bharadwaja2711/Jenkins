@@ -44,24 +44,5 @@ pipeline {
         }
       }
     }
-    stage('Update Deployment File') {
-    environment {
-        GIT_REPO_NAME = "Jenkins"
-        GIT_USER_NAME = "bharadwaja2711"
-    }
-    steps {
-        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-            sh '''
-                git config user.email "bharadwaja1.618@gmail.com"
-                git config user.name "bharadwaja2711"
-                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
-                git add ULTIMATE-CICD-PIPELINE/spring-boot-app-manifests/deployment.yml
-                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                git remote set-url origin https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git
-                git push origin HEAD:main
-            '''
-        }
-      }
-    }
   }
 }
