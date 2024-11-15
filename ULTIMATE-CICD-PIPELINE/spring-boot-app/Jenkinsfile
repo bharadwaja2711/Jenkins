@@ -7,16 +7,10 @@ pipeline {
   }
   stages {
     stage('Checkout') {
-    steps {
-          // Update Git remote URL to use new username
-          sh 'git remote set-url origin https://github.com/bharadwaja2711/Jenkins'
-          
-          // Checkout the code using the updated remote URL
-          checkout scm
-          
-          // Optionally, print a success message
-          sh 'echo "Checkout completed successfully"'
-        }
+      steps {
+        sh 'echo passed'
+        //git branch: 'main', url: 'https://github.com/bharadwaja2711/Jenkins.git'
+      }
     }
     stage('Build and Test') {
       steps {
