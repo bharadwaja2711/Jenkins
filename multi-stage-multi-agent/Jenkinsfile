@@ -17,36 +17,5 @@ pipeline {
         sh 'node --version'
       }
     }
-    stage('Versioning') {
-      agent { label 'your-jenkins-agent' } // or docker, depends on where git is installed
-      steps {
-        script {
-          sh '''
-            # Fetch the latest changes
-            git pull origin main
-
-            # Read current version
-            VERSION=$(cat VERSION)
-            echo "Current version: $VERSION"
-
-            # Bump the patch version
-            MAJOR=$(echo $VERSION | cut -d. -f1)
-            MINOR=$(echo $VERSION | cut -d. -f2)
-            NEW_MINOR=$((MINOR + 1))
-            NEW_VERSION="$MAJOR.$NEW_MINOR"
-
-            # Update VERSION file
-            echo $NEW_VERSION > VERSION
-            git add VERSION
-            git commit -m "Bump version to $NEW_VERSION [skip ci]"
-            git tag v$NEW_VERSION
-
-            # Push changes and tag
-            git push origin main
-            git push origin v$NEW_VERSION
-          '''
-        }
-      }
-    }
   }
 }
